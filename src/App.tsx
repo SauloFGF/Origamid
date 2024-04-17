@@ -1,34 +1,41 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from "react"
+import Button from "./Button";
+import Input from "./Input";
+import Checkbox from "./Checkbox";
+
+type Venda = {
+  id: string;
+  nome: string;
+  preco: number;
+  status: string;
+}
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [inicio, setInicio] = React.useState("");
+  const [final, setFinal] = React.useState("");
+  const [data, setData] = React.useState<null | Venda[]>(null);
+
+  React.useEffect(() => {
+    if (inicio !== '' && final !== '') {
+      fetch(`https://data.origamid.dev/vendas/?inicio=${inicio}&final=${final}`)
+      .then((r) => r.json())
+      .then((json) => setData(json as Venda[]))
+      .catch((error) => console.log(error));
+    }
+  }, [inicio, final])
 
   return (
-    <>
+    <div>
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <Input label="Inicio" type="date" value={inicio} setState={setInicio}/>
+        <Input label="Final" type="date" value={final} setState={setFinal}/>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+      <p>quantidade de vendas: {data?.length}</p>
+      {data !== null && data.map((venda) => 
+      <li key={venda.id}>
+        {venda.nome} : {venda.status}
+      </li>)}
+  </div>
   )
 }
 
