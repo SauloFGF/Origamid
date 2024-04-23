@@ -1,41 +1,42 @@
 import React from "react"
-import Button from "./Button";
-import Input from "./Input";
-import Checkbox from "./Checkbox";
+import useFetch from "./useFetch"
 
-type Venda = {
+type Produto = {
   id: string;
   nome: string;
   preco: number;
-  status: string;
+  quantidade: number;
+  descricao: string;
+  internacional: boolean;
 }
 
 function App() {
-  const [inicio, setInicio] = React.useState("");
-  const [final, setFinal] = React.useState("");
-  const [data, setData] = React.useState<null | Venda[]>(null);
-
-  React.useEffect(() => {
-    if (inicio !== '' && final !== '') {
-      fetch(`https://data.origamid.dev/vendas/?inicio=${inicio}&final=${final}`)
-      .then((r) => r.json())
-      .then((json) => setData(json as Venda[]))
-      .catch((error) => console.log(error));
-    }
-  }, [inicio, final])
+   const [id, setId] = React.useState("p001")
+   const produtos = useFetch<Produto[]>("https://data.origamid.dev/produtos/");
+   const produto = useFetch<Produto>(`https://data.origamid.dev/produtos/${id}`)
 
   return (
-    <div>
+    <section className="flex">
       <div>
-        <Input label="Inicio" type="date" value={inicio} setState={setInicio}/>
-        <Input label="Final" type="date" value={final} setState={setFinal}/>
+        {produtos.data && 
+        produtos.data.map((produto) => (
+          <button onClick={() => setId(produto.id)} style={{fontSize: "1rem"}} key={produto.id}>{produto.id}</button>
+        ))}
       </div>
-      <p>quantidade de vendas: {data?.length}</p>
-      {data !== null && data.map((venda) => 
-      <li key={venda.id}>
-        {venda.nome} : {venda.status}
-      </li>)}
-  </div>
+      <div>
+        {produto.loading && <>Carregando...</>}
+        {produto.data && (
+          <ul>
+            <li>ID: {produto.data.id}</li>
+            <li>Nome: {produto.data.nome}</li>
+            <li>Preco: {produto.data.preco}</li>
+            <li>Quantidade: {produto.data.quantidade}</li>
+            <li>Descricao: {produto.data.descricao}</li>
+            <li>Internacional: {produto.data.internacional ? 'sim' : 'nao'}</li>
+          </ul>
+        )}
+      </div>
+  </section>
   )
 }
 
